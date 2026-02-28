@@ -85,6 +85,10 @@ if err != nil {
 
 Retryable errors (429, 503) are automatically retried with exponential backoff before being returned. Fatal errors (400, 401, 402, 403) fail immediately.
 
+## Documentation
+
+For more information, check out the full documentation at https://docs.nslsolver.com
+
 ## License
 
 MIT
