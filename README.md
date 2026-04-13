@@ -1,6 +1,6 @@
 # NSLSolver Go SDK
 
-Go client for the [NSLSolver](https://nslsolver.com) captcha solving API. Supports Cloudflare Turnstile and Challenge page solves with automatic retries and exponential backoff. No external dependencies.
+Go client for the [NSLSolver](https://nslsolver.com) captcha solving API. Supports Cloudflare Turnstile, Challenge page, and Kasada solves with automatic retries and exponential backoff. No external dependencies.
 
 ## Installation
 
@@ -44,6 +44,29 @@ if err != nil {
 }
 fmt.Println(result.Cookies.CFClearance)
 ```
+
+### Kasada
+
+Returns headers needed to bypass Kasada protection.
+
+```go
+result, err := client.SolveKasada(ctx, nslsolver.KasadaParams{
+    URL:       "https://example.com/api",
+    UserAgent: "Mozilla/5.0 ... Chrome/131.0.0.0 ...",
+    UAVersion: 131,
+    KasadaConfig: nslsolver.KasadaConfig{
+        PJSPath: "/path/to/p.js",
+        FPHost:  "fp.example.com",
+        TLHost:  "tl.example.com",
+    },
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(result.Headers.XKpsdkCT)
+```
+
+Optional fields: `KasadaConfig.CDConstant`, `Proxy`.
 
 ### Balance
 

@@ -1,5 +1,5 @@
 // Package nslsolver provides a Go client for the NSLSolver captcha solving API,
-// supporting Cloudflare Turnstile and Challenge solves with automatic retries.
+// supporting Cloudflare Turnstile, Challenge, and Kasada solves with automatic retries.
 package nslsolver
 
 import (
@@ -17,7 +17,7 @@ const (
 	DefaultBaseURL    = "https://api.nslsolver.com"
 	DefaultTimeout    = 120 * time.Second
 	DefaultMaxRetries = 3
-	Version           = "1.0.0"
+	Version           = "1.1.0"
 )
 
 // Client is the NSLSolver API client. Safe for concurrent use.
@@ -108,6 +108,43 @@ func (c *Client) SolveChallenge(ctx context.Context, params ChallengeParams) (*C
 	}
 
 	var result ChallengeResult
+	if err := c.doSolve(ctx, reqBody, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SolveKasada solves a Kasada challenge. URL, UserAgent, UAVersion, and KasadaConfig are required.
+func (c *Client) SolveKasada(ctx context.Context, params KasadaParams) (*KasadaResult, error) {
+	if params.URL == "" {
+		return nil, fmt.Errorf("nslsolver: URL is required")
+	}
+	if params.UserAgent == "" {
+		return nil, fmt.Errorf("nslsolver: UserAgent is required")
+	}
+	if params.UAVersion == 0 {
+		return nil, fmt.Errorf("nslsolver: UAVersion is required")
+	}
+	if params.KasadaConfig.PJSPath == "" {
+		return nil, fmt.Errorf("nslsolver: KasadaConfig.PJSPath is required")
+	}
+	if params.KasadaConfig.FPHost == "" {
+		return nil, fmt.Errorf("nslsolver: KasadaConfig.FPHost is required")
+	}
+	if params.KasadaConfig.TLHost == "" {
+		return nil, fmt.Errorf("nslsolver: KasadaConfig.TLHost is required")
+	}
+
+	reqBody := solveRequest{
+		Type:         "kasada",
+		URL:          params.URL,
+		UserAgent:    params.UserAgent,
+		UAVersion:    params.UAVersion,
+		KasadaConfig: &params.KasadaConfig,
+		Proxy:        params.Proxy,
+	}
+
+	var result KasadaResult
 	if err := c.doSolve(ctx, reqBody, &result); err != nil {
 		return nil, err
 	}
