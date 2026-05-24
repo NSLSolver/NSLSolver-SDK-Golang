@@ -25,7 +25,7 @@ result, err := client.SolveTurnstile(ctx, nslsolver.TurnstileParams{
 if err != nil {
     log.Fatal(err)
 }
-fmt.Println(result.Token)
+fmt.Println(result.Token, "cost:", result.Cost)
 ```
 
 Optional fields: `Action`, `CData`, `Proxy`, `UserAgent`.
@@ -72,8 +72,11 @@ Optional fields: `KasadaConfig.CDConstant`, `Proxy`.
 
 ```go
 balance, err := client.GetBalance(ctx)
-fmt.Printf("$%.2f, %d threads\n", balance.Balance, balance.MaxThreads)
+fmt.Printf("$%.4f  CPM: %d/%d  unlimited=%v\n",
+    balance.Balance, balance.CurrentCPM, balance.CPMLimit, balance.Unlimited)
 ```
+
+`MaxCPM` is the per-key captchas-per-minute ceiling (`0` means uncapped). `CurrentCPM` shows how many tokens are consumed in the rolling minute. Pair them to size your worker pool.
 
 ## Client Options
 

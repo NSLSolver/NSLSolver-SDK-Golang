@@ -272,9 +272,13 @@ func TestGetBalance_Success(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(BalanceResult{
+			Success:      true,
 			Balance:      42.50,
-			MaxThreads:   10,
+			Unlimited:    false,
 			AllowedTypes: []string{"turnstile", "challenge"},
+			MaxCPM:       600,
+			CurrentCPM:   12,
+			CPMLimit:     600,
 		})
 	}))
 	defer server.Close()
@@ -288,8 +292,14 @@ func TestGetBalance_Success(t *testing.T) {
 	if result.Balance != 42.50 {
 		t.Errorf("expected balance 42.50, got %f", result.Balance)
 	}
-	if result.MaxThreads != 10 {
-		t.Errorf("expected max_threads 10, got %d", result.MaxThreads)
+	if result.MaxCPM != 600 {
+		t.Errorf("expected max_cpm 600, got %d", result.MaxCPM)
+	}
+	if result.CurrentCPM != 12 {
+		t.Errorf("expected current_cpm 12, got %d", result.CurrentCPM)
+	}
+	if result.CPMLimit != 600 {
+		t.Errorf("expected cpm_limit 600, got %d", result.CPMLimit)
 	}
 	if len(result.AllowedTypes) != 2 {
 		t.Fatalf("expected 2 allowed types, got %d", len(result.AllowedTypes))

@@ -1,5 +1,5 @@
 // Package nslsolver provides a Go client for the NSLSolver captcha solving API,
-// supporting Cloudflare Turnstile, Challenge, and Kasada solves with automatic retries.
+// supporting Cloudflare Turnstile, Challenge, Kasada, and Akamai solves with automatic retries.
 package nslsolver
 
 import (
@@ -145,6 +145,34 @@ func (c *Client) SolveKasada(ctx context.Context, params KasadaParams) (*KasadaR
 	}
 
 	var result KasadaResult
+	if err := c.doSolve(ctx, reqBody, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// SolveAkamai solves an Akamai Bot Manager challenge. URL, UserAgent, and Proxy
+// are all required. The returned _abck cookie is bound to the proxy's egress IP
+// and to the submitted UA — replay on the same proxy and user agent.
+func (c *Client) SolveAkamai(ctx context.Context, params AkamaiParams) (*AkamaiResult, error) {
+	if params.URL == "" {
+		return nil, fmt.Errorf("nslsolver: URL is required")
+	}
+	if params.UserAgent == "" {
+		return nil, fmt.Errorf("nslsolver: UserAgent is required for akamai type")
+	}
+	if params.Proxy == "" {
+		return nil, fmt.Errorf("nslsolver: Proxy is required for akamai type")
+	}
+
+	reqBody := solveRequest{
+		Type:      "akamai",
+		URL:       params.URL,
+		UserAgent: params.UserAgent,
+		Proxy:     params.Proxy,
+	}
+
+	var result AkamaiResult
 	if err := c.doSolve(ctx, reqBody, &result); err != nil {
 		return nil, err
 	}
